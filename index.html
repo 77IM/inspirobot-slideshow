@@ -1,0 +1,69 @@
+<!-- (c) 2019 William J. Scott III -->
+<!-- As an experiment, this file is written in a way that is intentionally terse and hacky and ugly. I'm not proud. -->
+<html>
+  <head>
+    <title>InspiroBot Inspirational Slide Show</title>
+    <style>
+body {
+  background-color: black;
+  font: bold 36pt Georgia;
+  color: #404040;
+}
+div {
+  display: block;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+img {
+  display: block;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  opacity: 0;
+  transform: translate(-50%, -50%);
+}
+img.visible {
+  transition-property: opacity;
+  transition-duration: 3s;
+  transition-timing-function: easeInOutCubic;
+  opacity: 1;
+}
+    </style>
+    <script>
+      window.slideshowSeconds = new URLSearchParams(top.location.search).get("seconds");
+
+      window.nextSlide = function() {
+        window.setTimeout(window.nextSlide, (window.slideshowSeconds == null ? 60 : window.slideshowSeconds) * 1000);
+        window.refreshPoster();
+      }
+
+      window.refreshPoster = function() {
+        fetch("https://cors-anywhere.herokuapp.com/https://inspirobot.me/api?generate=true&" + new Date().getTime()).then(function(response) {
+          response.text().then(function(url) {
+            var img = document.createElement("img");
+            img.src = url;
+            document.body.appendChild(img);
+            window.setTimeout(function() {
+              img.className = "visible";
+              window.setTimeout(function() {
+                document.body.removeChild(document.body.firstElementChild);
+              }, 3000);
+            }, 200);
+          }, function(error) {
+            console.log("Read error: " + error);
+          });
+        }, function(error) {
+          console.log("Connect error: " + error);
+        });
+      };
+
+      window.setTimeout(window.nextSlide, 3000);
+    </script>
+
+  </head>
+  <body onclick='document.body.requestFullscreen();' onkeypress='window.refreshPoster();'>
+    <div>Click for Full Screen Mode</div>
+  </body>
+</html>
